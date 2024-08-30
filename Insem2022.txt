@@ -1,0 +1,67 @@
+Q2.a. Explain the concept of candidate key and primary key, foreign key. Identify
+ above listed key for the following schema:
+ Person (driver_id, name, address, contactno)
+ Car(licence, model, year)
+ Owns (driver_id, licence)
+
+Person Table:
+Primary Key: driver_id
+Foreign Key: None
+
+Car Table:
+Primary Key: licence
+Foreign Key: None
+
+Owns Table:
+Primary Key: Combination of driver_id and licence
+Foreign Keys:
+driver_id (references driver_id in Person)
+licence (references licence in Car)
+---------------------------------------------------------------------------------------------
+Q4.a. Consider the following schemes
+ Supplier(SNO, Sname, Status, City)
+ Parts (PNO, Pname, Color, Weight, City)
+ Shipments(SNO,PNO,QTY)
+
+SQL> CREATE TABLE Supplier
+  2  (SNO int PRIMARY KEY,
+  3  Sname varchar(20),
+  4  Status varchar(20),
+  5  City varchar(20));
+
+Table created.
+
+SQL> CREATE TABLE Parts
+  2  (PNO int PRIMARY KEY,
+  3  Pname varchar(20),
+  4  Color varchar(20),
+  5  Weight int,
+  6  City varchar(20));
+
+Table created.
+
+SQL> CREATE TABLE Shipments
+  2  (SNO int REFERENCES Supplier(SNO),
+  3  PNO int REFERENCES Parts(PNO),
+  4  QTY int);
+
+Table created. 
+
+Write SQL queries for the following:
+ i. Find shipment information (SNO, Sname, PNO, Pname, QTY) for
+ those having quantity less than 157.
+ SELECT SNO, Sname, PNO, Pname, QTY
+ FROM Supplier NATURAL JOIN Shipments NATURAL JOIN Parts
+ WHERE QTY<157;
+
+ ii. List SNO, Sname, PNO, Pname for those suppliers who made
+ shipments of parts whose quantity is larger than the average quantity
+ SELECT SNO, Sname, PNO, Pname
+ FROM Supplier NATURAL JOIN Shipments NATURAL JOIN Parts
+ WHERE QTY > (SELECT avg(QTY) FROM Shipments);
+
+ iii. Find aggregate quantity of PNO 1692 of color green for which
+ shipments made by supplier number who residing Mumbai
+ SELECT SUM(QTY) FROM Shipments NATURAL JOIN Parts
+ WHERE PNO=1692 and Color='Green' and City='Mumbai';
+----------------------------------------------------------------------------------

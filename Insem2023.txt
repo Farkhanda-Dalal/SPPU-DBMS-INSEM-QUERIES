@@ -1,0 +1,42 @@
+ Q3.a Consider the following schemas
+ Emp(Emp_no, Emp_name, Dept_no)
+ Dept(Dept_no, Dept_name)
+ Address(Dept_name, Dept_location)
+ Write SQL queries for the following
+
+CREATE TABLE Department(
+    Dept_no int PRIMARY KEY,
+    Dept_Name varchar(20)
+);
+
+CREATE TABLE Emp(
+    Emp_no int PRIMARY KEY,
+    Emp_name varchar(20),
+    Dept_no int REFERENCES Department(Dept_no) ON DELETE CASCADE
+);
+
+CREATE TABLE Address(
+    Dept_Name varchar(20),
+    Dept_location varchar(20),
+    PRIMARY KEY(Dept_name, Dept_location)
+);
+
+ i. Display the location of department where employee ‘Ram’ is working.
+ SELECT Dept_location FROM Address 
+ WHERE Dept_Name=(
+    SELECT Dept_Name FROM Department 
+    NATURAL JOIN Emp
+    WHERE Emp_name='Ram'
+ );
+
+ ii. Create a view to store total no of employees working in each
+ department in ascending order.
+CREATE OR REPLACE VIEW Emp_Count AS
+SELECT Dept_no, COUNT(Emp_no) AS Emp_Count FROM Emp
+GROUP BY Dept_no;
+
+ iii. Find the name of the department in which no employee is working
+ SELECT d.Dept_Name FROM Department d
+ LEFT OUTER JOIN Emp e
+ ON d.Dept_no=e.Dept_no
+ WHERE Emp_no IS NULL;

@@ -1,0 +1,109 @@
+Q2.a. Explain the concept of candidate key and primary key, foreign key. Identify
+ above listed key for the following schema:
+ Person (driver_id, name, address, contactno)
+ Car(licence, model, year)
+ Owns (driver_id, licence)
+
+Person Table:
+Primary Key: driver_id
+Foreign Key: None
+
+Car Table:
+Primary Key: licence
+Foreign Key: None
+
+Owns Table:
+Primary Key: Combination of driver_id and licence
+Foreign Keys:
+driver_id (references driver_id in Person)
+licence (references licence in Car)
+---------------------------------------------------------------------------------------------
+Q4.a. Consider the following schemes
+ Supplier(SNO, Sname, Status, City)
+ Parts (PNO, Pname, Color, Weight, City)
+ Shipments(SNO,PNO,QTY)
+
+SQL> CREATE TABLE Supplier
+  2  (SNO int PRIMARY KEY,
+  3  Sname varchar(20),
+  4  Status varchar(20),
+  5  City varchar(20));
+
+Table created.
+
+SQL> CREATE TABLE Parts
+  2  (PNO int PRIMARY KEY,
+  3  Pname varchar(20),
+  4  Color varchar(20),
+  5  Weight int,
+  6  City varchar(20));
+
+Table created.
+
+SQL> CREATE TABLE Shipments
+  2  (SNO int REFERENCES Supplier(SNO),
+  3  PNO int REFERENCES Parts(PNO),
+  4  QTY int);
+
+Table created. 
+
+Write SQL queries for the following:
+ i. Find shipment information (SNO, Sname, PNO, Pname, QTY) for
+ those having quantity less than 157.
+ SELECT SNO, Sname, PNO, Pname, QTY
+ FROM Supplier NATURAL JOIN Shipments NATURAL JOIN Parts
+ WHERE QTY<157;
+
+ ii. List SNO, Sname, PNO, Pname for those suppliers who made
+ shipments of parts whose quantity is larger than the average quantity
+ SELECT SNO, Sname, PNO, Pname
+ FROM Supplier NATURAL JOIN Shipments NATURAL JOIN Parts
+ WHERE QTY > (SELECT avg(QTY) FROM Shipments);
+
+ iii. Find aggregate quantity of PNO 1692 of color green for which
+ shipments made by supplier number who residing Mumbai
+ SELECT SUM(QTY) FROM Shipments NATURAL JOIN Parts
+ WHERE PNO=1692 and Color='Green' and City='Mumbai';
+
+ --------------------------------------------------------------------------------------
+
+ Q3.c. Consider following schema
+ Student_fee_details (rollno, name, fee_deposited, date)
+ Write a trigger to preserve old values of student fee details before updating
+ in the table
+
+ CREATE TABLE Student_fee_details (
+    rollno INT,
+    name VARCHAR2(100),
+    fee_deposited NUMBER(10,2),
+    payment_date DATE
+)
+/
+
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (1, 'Alice Smith', 1500.00, TO_DATE('2024-01-15', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (2, 'Bob Johnson', 2000.00, TO_DATE('2024-02-20', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (3, 'Charlie Brown', 1800.00, TO_DATE('2024-03-10', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (4, 'Diana Prince', 1700.00, TO_DATE('2024-04-05', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (5, 'Eve Adams', 1600.00, TO_DATE('2024-05-15', 'YYYY-MM-DD'))/
+/
+
+CREATE TABLE Student_Copy AS
+(SELECT * FROM Student_fee_details)/
+
+CREATE OR REPLACE TRIGGER prev_info
+AFTER UPDATE ON Student_fee_details
+FOR EACH ROW
+BEGIN
+    INSERT INTO Student_Copy (rollno, name, fee_deposited, payment_date)
+    VALUES (:OLD.rollno, :OLD.name, :OLD.fee_deposited, :OLD.payment_date);
+
+    dbms_output.put_line('Old data inserted into Student_Copy Table');
+END;
+/
+
+
+UPDATE Student_fee_details SET name='Farkhanda Dalal' WHERE rollno=1;
+
+select * from Student_Copy;
+
+------------------------------------------------------------------------------------------------------

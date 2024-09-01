@@ -1,0 +1,122 @@
+Q3.a. Consider following schema
+ Student_fee_details (rollno, name, fee_deposited, date)
+ Write a trigger to preserve old values of student fee details before updating
+ in the table
+
+ CREATE TABLE Student_fee_details (
+    rollno INT,
+    name VARCHAR2(100),
+    fee_deposited NUMBER(10,2),
+    payment_date DATE
+)
+/
+
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (1, 'Alice Smith', 1500.00, TO_DATE('2024-01-15', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (2, 'Bob Johnson', 2000.00, TO_DATE('2024-02-20', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (3, 'Charlie Brown', 1800.00, TO_DATE('2024-03-10', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (4, 'Diana Prince', 1700.00, TO_DATE('2024-04-05', 'YYYY-MM-DD'))/
+INSERT INTO Student_fee_details (rollno, name, fee_deposited, payment_date) VALUES (5, 'Eve Adams', 1600.00, TO_DATE('2024-05-15', 'YYYY-MM-DD'))/
+/
+
+CREATE TABLE Student_Copy AS
+(SELECT * FROM Student_fee_details)/
+
+CREATE OR REPLACE TRIGGER prev_info
+AFTER UPDATE ON Student_fee_details
+FOR EACH ROW
+BEGIN
+    INSERT INTO Student_Copy (rollno, name, fee_deposited, payment_date)
+    VALUES (:OLD.rollno, :OLD.name, :OLD.fee_deposited, :OLD.payment_date);
+
+    dbms_output.put_line('Old data inserted into Student_Copy Table');
+END;
+/
+
+
+UPDATE Student_fee_details SET name='Farkhanda Dalal' WHERE rollno=1;
+
+select * from Student_Copy;
+-----------------------------------------------------------------
+Q3.c. Consider following schema
+Hotels(hotel_no, hotel_name, city)
+Rooms(Room_no, hotel_no, price, type)
+Write a PL/SQL Procedure to list the price and type of all 
+rooms at hotel TAJ
+
+CREATE TABLE Hotels(
+    hotel_no int PRIMARY KEY,
+    hotel_name varchar(25),
+    city varchar(20)
+);
+
+CREATE TABLE Rooms(
+    Room_no int PRIMARY KEY,
+    hotel_no int REFERENCES Hotels(hotel_no),
+    price int,
+    type varchar(25)
+);
+
+CREATE OR REPLACE PROCEDURE Room_Info
+IS
+CURSOR C1 IS
+SELECT price, type FROM Rooms
+NATURAL JOIN Hotels
+WHERE hotel_name='Ocean View';
+
+BEGIN
+FOR I in C1
+LOOP
+dbms_output.put_line(I.price||' '|| I.type);
+END LOOP;
+
+END;
+/
+---------------------------------------------------------
+Q4.a. Consider the following relation schema 
+MOVIES(Mov_Id, Mov_Title, Mov_Year, Dir_Id)
+DIRECTOR(Dir_Id, Dir_Name)
+RATING(Mov_Id, Rev_Stars)
+
+-- Create the DIRECTOR table
+CREATE TABLE DIRECTOR (
+    Dir_Id INT PRIMARY KEY,
+    Dir_Name VARCHAR(100) NOT NULL
+);
+
+-- Create the MOVIES table
+CREATE TABLE MOVIES (
+    Mov_Id INT PRIMARY KEY,
+    Mov_Title VARCHAR(255) NOT NULL,
+    Mov_Year INT,
+    Dir_Id INT,
+    FOREIGN KEY (Dir_Id) REFERENCES DIRECTOR(Dir_Id)
+);
+
+-- Create the RATING table
+CREATE TABLE RATING (
+    Mov_Id INT,
+    Rev_Stars INT CHECK (Rev_Stars BETWEEN 1 AND 5),
+    PRIMARY KEY (Mov_Id),
+    FOREIGN KEY (Mov_Id) REFERENCES MOVIES(Mov_Id)
+);
+
+i. Select all movies directed by Raj Kapoor
+SELECT * FROM MOVIES 
+NATURAL JOIN DIRECTOR
+WHERE Dir_Name='Raj Kapoor';
+
+ii. Select name and no. of stars for movie. Sort results on 
+movie title and from higher starts to least stars
+SELECT Mov_Title, Rev_Stars FROM MOVIES
+NATURAL JOIN RATING
+ORDER BY Mov_Title, Rev_Stars desc;
+
+iii. Assign rating of all movies directed by 'Steven Spielberg' to 9
+UPDATE RATING SET Rev_Stars=9 
+WHERE   Mov_Id IN(SELECT Mov_Id FROM MOVIES 
+                NATURAL JOIN DIRECTOR
+                WHERE Dir_Name='Steven Spielberg');
+
+
+
+
